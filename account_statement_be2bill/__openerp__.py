@@ -25,11 +25,23 @@
     'version': '0.1',
     'category': 'Generic Modules/Others',
     'license': 'AGPL-3',
-    'description': """empty""",
+    'description': """
+Allow import of be2bill file to generate account bank statements
+================================================================
+
+Features :
+----------
+    * 
+
+Technical informations :
+------------------------
+    * 
+""",
     'author': 'Akretion',
     'website': 'http://www.akretion.com/',
     'depends': [
         'account_statement_base_import',
+        'account_statement_transactionid_completion',
     ],
     'init_xml': [],
     'update_xml': [],
