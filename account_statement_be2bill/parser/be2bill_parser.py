@@ -49,6 +49,7 @@ class Be2BillFileParser(FileParser):
             'EXECCODE': float_or_zero,
             'MESSAGE': unicode,
             'ORDERID': float_or_zero,
+            'AMOUNT': float_or_zero,
             'TRANSACTIONID': unicode,
         }
         self.refund_amount = None
@@ -82,8 +83,9 @@ class Be2BillFileParser(FileParser):
             raise osv.except_osv(_('Error!'),
                     _('Use case not managed !\nEXECCODE (%s) MESSAGE. (%s)') % (line['EXECCODE'], line['MESSAGE']))
         res = {
+            'transaction_id': line['TRANSACTIONID'],
             'name': line['TRANSACTIONID'],
-            'date': line["DATE"],
+            'date': line['DATE'],
             'amount': line['AMOUNT'] / 100,
             'ref': '/',             # TODO
             'label': '/',           # TODO
