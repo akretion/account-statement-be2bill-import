@@ -22,7 +22,9 @@
 from account_statement_base_import.parser.file_parser import FileParser
 from csv import Dialect
 from _csv import QUOTE_MINIMAL, register_dialect
-
+from openerp.osv import osv
+from openerp.tools.translate import _
+import codecs
 
 class be2bill_dialect(Dialect):
     delimiter = ';'
@@ -35,16 +37,20 @@ class be2bill_dialect(Dialect):
 
 register_dialect("be2bill_dialect", be2bill_dialect)
 
+def float_or_zero(val):
+    """ Conversion function used to manage
+    empty string into float usecase"""
+    return float(val) if val else 0.0
 
 class Be2BillFileParser(FileParser):
     def __init__(self, parse_name, ftype='csv'):
+        print "__init__"
         conversion_dict = {
-            #"OPERATION_DATE": format_date,
-            #"PAYMENT_DATE": format_date,
-            #"TRANSACTION_ID": unicode,
-            #"OPERATION_NAME": unicode,
-            #"OPERATION_AMOUNT": float_or_zero,
-            #"OPERATION_SEQUENCE": unicode,
+            'EXECCODE': float_or_zero,
+            'MESSAGE': unicode,
+            'ORDERID': float_or_zero,
+            'AMOUNT': float_or_zero,
+            'TRANSACTIONID': unicode,
         }
         self.refund_amount = None
         super(Be2BillFileParser, self).__init__(
@@ -60,13 +66,28 @@ class Be2BillFileParser(FileParser):
         """
         return parser_name == 'be2bill_csvparser'
 
+    def _pre(self, *args, **kwargs):
+        """
+            Remove undesired character at the beginning of the file.
+        """
+        split_file = self.filebuffer.split("\n")
+        selected_lines = []
+        for line in split_file:
+            if line.startswith(codecs.BOM_UTF8):
+                line = line[3:]
+            selected_lines.append(line.strip())
+        self.filebuffer = "\n".join(selected_lines)
+
     def get_st_line_vals(self, line, *args, **kwargs):
+        if line['EXECCODE'] != 0: 
+            raise osv.except_osv(_('Error!'),
+                    _('Use case not managed !\nEXECCODE (%s) MESSAGE. (%s)') % (line['EXECCODE'], line['MESSAGE']))
         res = {
-            'name': line["TRANSACTION_ID"],
-            'date': line["OPERATION_DATE"],
-            'amount': line['OPERATION_AMOUNT'],
-            'ref': '/',
-            'transaction_id': line["TRANSACTION_ID"],
-            'label': line["OPERATION_NAME"],
+            'transaction_id': line['TRANSACTIONID'],
+            'name': line['TRANSACTIONID'],
+            'date': line['DATE'],
+            'amount': line['AMOUNT'] / 100,
+            'ref': '/',             # TODO
+            'label': '/',           # TODO
         }
         return res
