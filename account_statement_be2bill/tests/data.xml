@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+
+    <record id="be2bill_statement_profile" model="account.statement.profile">
+        <field name="name">Be2bill statement profile</field>
+        <field name="journal_id" ref="account.bank_journal" />
+        <field name="commission_account_id" ref="account.income_fx_expense" />
+        <field name="import_type">be2bill_csvparser</field>
+    </record>
+
+</data>
+</openerp>

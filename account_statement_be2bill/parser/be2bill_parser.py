@@ -22,9 +22,8 @@
 from account_statement_base_import.parser.file_parser import FileParser
 from csv import Dialect
 from _csv import QUOTE_MINIMAL, register_dialect
-from openerp.osv import osv
-from openerp.tools.translate import _
 import codecs
+
 
 class be2bill_dialect(Dialect):
     delimiter = ';'
@@ -37,17 +36,16 @@ class be2bill_dialect(Dialect):
 
 register_dialect("be2bill_dialect", be2bill_dialect)
 
+
 def float_or_zero(val):
     """ Conversion function used to manage
     empty string into float usecase"""
     return float(val) if val else 0.0
 
+
 class Be2BillFileParser(FileParser):
     def __init__(self, parse_name, ftype='csv'):
-        print "__init__"
         conversion_dict = {
-            'EXECCODE': float_or_zero,
-            'MESSAGE': unicode,
             'ORDERID': float_or_zero,
             'AMOUNT': float_or_zero,
             'TRANSACTIONID': unicode,
@@ -79,15 +77,15 @@ class Be2BillFileParser(FileParser):
         self.filebuffer = "\n".join(selected_lines)
 
     def get_st_line_vals(self, line, *args, **kwargs):
-        if line['EXECCODE'] != 0: 
-            raise osv.except_osv(_('Error!'),
-                    _('Use case not managed !\nEXECCODE (%s) MESSAGE. (%s)') % (line['EXECCODE'], line['MESSAGE']))
+        amount = line['AMOUNT'] / 100
+        if line['NATURE'] == 'refund':
+            amount *= -1
         res = {
             'transaction_id': line['TRANSACTIONID'],
             'name': line['TRANSACTIONID'],
             'date': line['DATE'],
-            'amount': line['AMOUNT'] / 100,
-            'ref': '/',             # TODO
-            'label': '/',           # TODO
+            'amount': amount,
+            'ref': line['ORDERID'],
+            'label': line['DESCRIPTION'],
         }
         return res

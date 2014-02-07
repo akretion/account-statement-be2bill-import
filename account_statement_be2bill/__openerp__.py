@@ -40,11 +40,13 @@ Technical informations :
     'author': 'Akretion',
     'website': 'http://www.akretion.com/',
     'depends': [
+        'account_accountant',
         'account_statement_base_import',
         'account_statement_transactionid_completion',
     ],
-    'init_xml': [],
-    'update_xml': [],
-    'demo_xml': [],
+    'data': [],
+    'demo': [
+        'tests/data.xml',
+    ],
     'installable': True,
 }
