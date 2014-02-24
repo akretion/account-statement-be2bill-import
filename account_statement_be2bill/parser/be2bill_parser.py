@@ -19,7 +19,11 @@
 #
 ###############################################################################
 
-from account_statement_base_import.parser.file_parser import FileParser
+from openerp.addons.account_statement_base_import.parser.file_parser import (
+    float_or_zero,
+    FileParser
+)
+    
 from csv import Dialect
 from _csv import QUOTE_MINIMAL, register_dialect
 import codecs
@@ -37,20 +41,14 @@ class be2bill_dialect(Dialect):
 register_dialect("be2bill_dialect", be2bill_dialect)
 
 
-def float_or_zero(val):
-    """ Conversion function used to manage
-    empty string into float usecase"""
-    return float(val) if val else 0.0
-
-
 class Be2BillFileParser(FileParser):
     def __init__(self, parse_name, ftype='csv'):
         conversion_dict = {
-            'ORDERID': float_or_zero,
+            'ORDERID': unicode,
             'AMOUNT': float_or_zero,
             'TRANSACTIONID': unicode,
+            'BILLINGFEESTTC': float_or_zero,
         }
-        self.refund_amount = None
         super(Be2BillFileParser, self).__init__(
             parse_name, ftype=ftype, conversion_dict=conversion_dict,
             dialect=be2bill_dialect
@@ -65,9 +63,7 @@ class Be2BillFileParser(FileParser):
         return parser_name == 'be2bill_csvparser'
 
     def _pre(self, *args, **kwargs):
-        """
-            Remove undesired character at the beginning of the file.
-        """
+        super(Be2BillFileParser, self)._pre(*args, **kwargs)
         split_file = self.filebuffer.split("\n")
         selected_lines = []
         for line in split_file:
@@ -89,3 +85,11 @@ class Be2BillFileParser(FileParser):
             'label': line['DESCRIPTION'],
         }
         return res
+
+    def _post(self, *args, **kwargs):
+        super(Be2BillFileParser, self)._post(*args, **kwargs)
+        for row in self.result_row_list:
+            commission_amount = - row['BILLINGFEESTTC'] / 100
+            if row['NATURE'] == 'refund':
+                commission_amount = 0.0
+            row['commission_amount'] = commission_amount

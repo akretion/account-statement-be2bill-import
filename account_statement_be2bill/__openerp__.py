@@ -43,6 +43,7 @@ Technical informations :
         'account_accountant',
         'account_statement_base_import',
         'account_statement_transactionid_completion',
+        'account_statement_commission',
     ],
     'data': [],
     'demo': [

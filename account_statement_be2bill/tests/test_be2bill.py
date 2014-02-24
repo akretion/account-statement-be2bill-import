@@ -32,7 +32,7 @@ class TestBe2bill(TransactionCase):
         cr, uid = self.cr, self.uid
         statement = self._import_file('be2bill_file.csv')
 
-        self.assertEquals(len(statement.line_ids), 2)
+        self.assertEquals(len(statement.line_ids), 3)
 
         line_ids = map(lambda line: line.id, statement.line_ids)
         lines = self.registry('account.bank.statement.line')\
@@ -43,13 +43,18 @@ class TestBe2bill(TransactionCase):
                 self.assertEquals(line['name'], u'A00000001')
                 self.assertEquals(line['date'], '2014-02-03')
                 self.assertEquals(line['amount'], 67.77)
-                self.assertEquals(line['ref'], u'1.0')
+                self.assertEquals(line['ref'], u'000000001')
             if line['transaction_id'] == u'A00000003':
                 self.assertEquals(line['label'], u'annulation client')
                 self.assertEquals(line['name'], u'A00000003')
                 self.assertEquals(line['date'], '2014-02-04')
                 self.assertEquals(line['amount'], -92.81)
-                self.assertEquals(line['ref'], u'2.0')
+                self.assertEquals(line['ref'], u'000002')
+            if not line['transaction_id']:
+                self.assertEquals(line['name'], u'IN Commission line')
+                self.assertEquals(line['date'], '2014-02-24')
+                self.assertEquals(line['amount'], -0.59)
+                self.assertEquals(line['ref'], u'commission')
 
 
 class TestAccountStatementProfil(TransactionCase):
