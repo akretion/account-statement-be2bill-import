@@ -20,8 +20,10 @@
 ###############################################################################
 
 from openerp.addons.account_statement_base_import.parser.file_parser import (
-    float_or_zero,
     FileParser
+)
+from openerp.addons.account_statement_base_import.parser.generic_file_parser import (
+    float_or_zero,
 )
     
 from csv import Dialect
@@ -79,16 +81,19 @@ class Be2BillFileParser(FileParser):
             amount *= -1
         res = {
             'transaction_id': line['TRANSACTIONID'],
-            'name': line['TRANSACTIONID'],
+            'name': line['DESCRIPTION'],
             'date': line['DATE'],
             'amount': amount,
             'ref': line['ORDERID'],
-            'label': line['DESCRIPTION'],
         }
         return res
 
     def _post(self, *args, **kwargs):
         super(Be2BillFileParser, self)._post(*args, **kwargs)
+        self.compute_commission()
+
+    def compute_commission(self):
+        fee_total = 0.0
         for row in self.result_row_list:
             if 'BILLINGFEESTTC' in row:
                 commission_amount = row['BILLINGFEESTTC']
@@ -101,4 +106,5 @@ class Be2BillFileParser(FileParser):
                 commission_amount /= 100
             if row['NATURE'] == 'refund':
                 commission_amount = 0.0
-            row['commission_amount'] = commission_amount
+            fee_total += commission_amount
+        self.commission_global_amount = fee_total

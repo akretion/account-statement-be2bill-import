@@ -23,7 +23,7 @@ class TestBe2bill(TransactionCase):
 
         context = {'file_name': filename}
         statement_id = self.registry('account.statement.profile')\
-            .multi_statement_import(
+            .statement_import(
                 cr, uid, False, profile_id, input_statement, 'csv', context
             )
         return self.registry('account.bank.statement')\
@@ -40,14 +40,12 @@ class TestBe2bill(TransactionCase):
             .read(cr, uid, line_ids)
         for line in lines:
             if line['transaction_id'] == u'A00000001':
-                self.assertEquals(line['label'], u'Payment')
-                self.assertEquals(line['name'], u'A00000001')
+                self.assertEquals(line['name'], u'Payment')
                 self.assertEquals(line['date'], '2014-02-03')
                 self.assertEquals(line['amount'], 67.77)
                 self.assertEquals(line['ref'], u'000000001')
             if line['transaction_id'] == u'A00000003':
-                self.assertEquals(line['label'], u'annulation client')
-                self.assertEquals(line['name'], u'A00000003')
+                self.assertEquals(line['name'], u'annulation client')
                 self.assertEquals(line['date'], '2014-02-04')
                 self.assertEquals(line['amount'], -92.81)
                 self.assertEquals(line['ref'], u'000002')
@@ -71,8 +69,7 @@ class TestBe2bill(TransactionCase):
             .read(cr, uid, line_ids)
 
         line_transaction = lines[0]
-        self.assertEquals(line_transaction['label'], u'Several times payment')
-        self.assertEquals(line_transaction['name'], u'B00000005')
+        self.assertEquals(line_transaction['name'], u'Several times payment')
         self.assertEquals(line_transaction['date'], '2014-02-20')
         self.assertEquals(line_transaction['amount'], 74.18)
         self.assertEquals(line_transaction['ref'], u'ABCDEFGHI')

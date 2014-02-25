@@ -1,5 +1,6 @@
 
-OPENERP_ADDONS=../ocb-addons,../ocb-web/addons,../banking-addons-reconcile,../file-exchange,.
+#OPENERP_ADDONS=../ocb-addons,../ocb-web/addons,../banking-addons-reconcile,../file-exchange,.
+OPENERP_ADDONS=../ocb-addons,../ocb-web/addons,../banking-addons-logistiflex,../file-exchange,.
 COVERAGE?=coverage
 COVERAGE_REPORT=$(COVERAGE) report -m
 COVERAGE_PARSE_RATE=$(COVERAGE_REPORT) | tail -n 1 | sed "s/ \+/ /g" | cut -d" " -f4
