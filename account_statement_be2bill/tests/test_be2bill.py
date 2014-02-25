@@ -1,5 +1,6 @@
 import base64
 
+from datetime import date
 from os.path import (
     join,
     abspath,
@@ -52,7 +53,10 @@ class TestBe2bill(TransactionCase):
                 self.assertEquals(line['ref'], u'000002')
             if not line['transaction_id']:
                 self.assertEquals(line['name'], u'IN Commission line')
-                self.assertEquals(line['date'], '2014-02-24')
+                self.assertEquals(
+                    line['date'],
+                    date.today().strftime('%Y-%m-%d')
+                )
                 self.assertEquals(line['amount'], -0.59)
                 self.assertEquals(line['ref'], u'commission')
 
