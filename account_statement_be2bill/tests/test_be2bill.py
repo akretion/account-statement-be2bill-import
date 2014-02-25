@@ -60,6 +60,35 @@ class TestBe2bill(TransactionCase):
                 self.assertEquals(line['amount'], -0.59)
                 self.assertEquals(line['ref'], u'commission')
 
+    def test_import_new(self):
+        cr, uid = self.cr, self.uid
+        statement = self._import_file('be2bill_file_new.csv')
+
+        self.assertEquals(len(statement.line_ids), 2)
+
+        line_ids = map(lambda line: line.id, statement.line_ids)
+        lines = self.registry('account.bank.statement.line')\
+            .read(cr, uid, line_ids)
+
+        line_transaction = lines[0]
+        self.assertEquals(line_transaction['label'], u'Several times payment')
+        self.assertEquals(line_transaction['name'], u'B00000005')
+        self.assertEquals(line_transaction['date'], '2014-02-20')
+        self.assertEquals(line_transaction['amount'], 74.18)
+        self.assertEquals(line_transaction['ref'], u'ABCDEFGHI')
+        self.assertEquals(line_transaction['transaction_id'], u'B00000005')
+
+        line_fees = lines[1]
+        self.assertFalse(line_fees['label'])
+        self.assertEquals(line_fees['name'], u'IN Commission line')
+        self.assertEquals(
+            line_fees['date'],
+            date.today().strftime('%Y-%m-%d')
+        )
+        self.assertEquals(line_fees['amount'], -0.62)
+        self.assertEquals(line_fees['ref'], u'commission')
+        self.assertFalse(line_fees['transaction_id'])
+
 
 class TestAccountStatementProfil(TransactionCase):
     def test_get_import_type_selection(self):

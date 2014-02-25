@@ -47,7 +47,6 @@ class Be2BillFileParser(FileParser):
             'ORDERID': unicode,
             'AMOUNT': float_or_zero,
             'TRANSACTIONID': unicode,
-            'BILLINGFEESTTC': float_or_zero,
         }
         super(Be2BillFileParser, self).__init__(
             parse_name, ftype=ftype, conversion_dict=conversion_dict,
@@ -73,7 +72,9 @@ class Be2BillFileParser(FileParser):
         self.filebuffer = "\n".join(selected_lines)
 
     def get_st_line_vals(self, line, *args, **kwargs):
-        amount = line['AMOUNT'] / 100
+        amount = line['AMOUNT']
+        if 'BILLINGFEESTTC' in line:
+            amount /= 100
         if line['NATURE'] == 'refund':
             amount *= -1
         res = {
@@ -89,7 +90,15 @@ class Be2BillFileParser(FileParser):
     def _post(self, *args, **kwargs):
         super(Be2BillFileParser, self)._post(*args, **kwargs)
         for row in self.result_row_list:
-            commission_amount = - row['BILLINGFEESTTC'] / 100
+            if 'BILLINGFEESTTC' in row:
+                commission_amount = row['BILLINGFEESTTC']
+            elif 'BILLINGFEES INCL. VAT' in row:
+                commission_amount = row['BILLINGFEES INCL. VAT']
+            else:
+                raise ValueError('Can\'t find fees amount')
+            commission_amount = - float_or_zero(commission_amount)
+            if 'BILLINGFEESTTC' in row:
+                commission_amount /= 100
             if row['NATURE'] == 'refund':
                 commission_amount = 0.0
             row['commission_amount'] = commission_amount
