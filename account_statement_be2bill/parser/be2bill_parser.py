@@ -91,6 +91,9 @@ class Be2BillFileParser(FileParser):
     def _post(self, *args, **kwargs):
         super(Be2BillFileParser, self)._post(*args, **kwargs)
         self.compute_commission()
+        for row in self.result_row_list:
+            if row['DATE'] > self.statement_date:
+                self.statement_date = row['DATE']
 
     def compute_commission(self):
         fee_total = 0.0
