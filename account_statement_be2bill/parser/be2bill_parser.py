@@ -49,6 +49,7 @@ class Be2BillFileParser(FileParser):
             'ORDERID': unicode,
             'AMOUNT': float_or_zero,
             'TRANSACTIONID': unicode,
+            'EXECCODE': unicode,
         }
         super(Be2BillFileParser, self).__init__(
             parse_name, ftype=ftype, conversion_dict=conversion_dict,
@@ -77,11 +78,11 @@ class Be2BillFileParser(FileParser):
         amount = line['AMOUNT']
         if 'BILLINGFEESTTC' in line:
             amount /= 100
-        if line['NATURE'] == 'refund':
+        if line['OPERATIONTYPE'] == 'refund':
             amount *= -1
         res = {
             'transaction_id': line['TRANSACTIONID'],
-            'name': line['DESCRIPTION'],
+            'name': line['OPERATIONTYPE'],
             'date': line['DATE'],
             'amount': amount,
             'ref': line['ORDERID'],
@@ -90,10 +91,14 @@ class Be2BillFileParser(FileParser):
 
     def _post(self, *args, **kwargs):
         super(Be2BillFileParser, self)._post(*args, **kwargs)
-        self.compute_commission()
+        final_rows = []
         for row in self.result_row_list:
             if row['DATE'] > self.statement_date:
                 self.statement_date = row['DATE']
+            if row['EXECCODE'] == '0':
+                final_rows.append(row)
+        self.result_row_list = final_rows
+        self.compute_commission()
 
     def compute_commission(self):
         fee_total = 0.0
@@ -107,7 +112,7 @@ class Be2BillFileParser(FileParser):
             commission_amount = - float_or_zero(commission_amount)
             if 'BILLINGFEESTTC' in row:
                 commission_amount /= 100
-            if row['NATURE'] == 'refund':
+            if row['OPERATIONTYPE'] == 'refund':
                 commission_amount = 0.0
             fee_total += commission_amount
         self.commission_global_amount = fee_total
