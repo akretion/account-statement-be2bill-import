@@ -95,7 +95,7 @@ class Be2BillFileParser(FileParser):
         for row in self.result_row_list:
             if row['DATE'] > self.statement_date:
                 self.statement_date = row['DATE']
-            if row['EXECCODE'] == '0':
+            if row['EXECCODE'] in ('0', '0000'):
                 final_rows.append(row)
         self.result_row_list = final_rows
         self.compute_commission()
